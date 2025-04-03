@@ -41,6 +41,12 @@ class Program
             outputPath = Path.Combine(inputPath, Path.GetFileName(inputPath) + ".sbx");
         }
         
+        if (!outputPath.EndsWith(".sbx") && !outputPath.EndsWith(".sbz") && !outputPath.EndsWith(".sbzip"))
+        {
+           Console.WriteLine("Output path is not valid.");
+              return;
+        }
+        
         if (!Directory.Exists(inputPath))
         {
             Console.WriteLine($"Input path '{inputPath}' does not exist.");
@@ -79,6 +85,99 @@ class Program
         
         startInfo.Arguments = "build.hxml";
         
-        Process.Start(startInfo);
+        var proc = Process.Start(startInfo);
+        proc.WaitForExit();
+        if (proc.ExitCode != 0)
+        {
+            Console.WriteLine($"Haxe process exited with code {proc.ExitCode}");
+            return;
+        }
+        
+        var mainLuaPath = Path.Combine(inputPath, "main.lua");
+        if (!File.Exists(mainLuaPath))
+        {
+            Console.WriteLine($"main.lua file not found in '{inputPath}'");
+            return;
+        }
+        
+        Console.WriteLine($"Reading main.lua file '{mainLuaPath}'");
+        var mainLua = File.ReadAllText(mainLuaPath);
+        
+        var assets = GetAllFiles(inputPath + "/assets");
+        
+        var binaryPath = Path.Combine(inputPath, "bin");
+        
+        var scripts = GetAllFiles(binaryPath);
+        
+        var zipFile = new System.IO.Compression.ZipArchive(File.Create(outputPath), System.IO.Compression.ZipArchiveMode.Create);
+        
+        var mainLuaEntry = zipFile.CreateEntry("main.lua", System.IO.Compression.CompressionLevel.Optimal);
+        Console.WriteLine($"Writing main.lua to '{outputPath}'");
+        using (var stream = mainLuaEntry.Open())
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(mainLua);
+            stream.Write(bytes, 0, bytes.Length);
+        }
+        
+        foreach (var asset in assets)
+        {
+            var entry = zipFile.CreateEntry(asset.Key.Replace(inputPath + "/assets/", "/assets/"), System.IO.Compression.CompressionLevel.Optimal);
+            Console.WriteLine($"Writing asset '{asset.Key}' to '{outputPath}'");
+            using (var stream = entry.Open())
+            {
+                stream.Write(asset.Value, 0, asset.Value.Length);
+            }
+        }
+
+        if (scripts.Any())
+        {
+            foreach (var script in scripts)
+            {
+                var entry = zipFile.CreateEntry(script.Key.Replace(binaryPath + "/", "/"), System.IO.Compression.CompressionLevel.Optimal);
+                Console.WriteLine($"Writing script '{script.Key}' to '{outputPath}'");
+                using (var stream = entry.Open())
+                {
+                    stream.Write(script.Value, 0, script.Value.Length);
+                }
+            }
+        }
+        
+        
+        zipFile.Dispose();
+        Console.WriteLine($"Created '{outputPath}'");
+        Console.WriteLine("Done.");
+        Console.WriteLine("Press any key to exit...");
+        Console.ReadKey();
+    }
+
+    public static Dictionary<string, byte[]>
+        GetAllFiles(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            Console.WriteLine($"Directory '{path}' does not exist.");
+            return new Dictionary<string, byte[]>();
+        }
+        
+        var assets = new Dictionary<string, byte[]>();
+
+        foreach (var file in Directory.GetFiles(path))
+        {
+            Console.WriteLine($"Reading file '{file}'");
+            var bytes = File.ReadAllBytes(file);
+            assets.Add(file, bytes);
+        }
+        
+        foreach (var dir in Directory.GetDirectories(path))
+        {
+            var dirName = Path.GetFileName(dir);
+            var dirAssets = GetAllFiles(dir);
+            foreach (var asset in dirAssets)
+            {
+                assets.Add(asset.Key, asset.Value);
+            }
+        }
+        
+        return assets;
     }
 }
