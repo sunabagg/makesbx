@@ -38,7 +38,8 @@ class Program
         
         if (string.IsNullOrEmpty(outputPath))
         {
-            outputPath = Path.Combine(inputPath, Path.GetFileName(inputPath) + ".sbx");
+            Console.WriteLine("Output path is required.");
+            return;
         }
         
         if (!outputPath.EndsWith(".sbx") && !outputPath.EndsWith(".sbz") && !outputPath.EndsWith(".sbzip"))
@@ -146,8 +147,6 @@ class Program
         zipFile.Dispose();
         Console.WriteLine($"Created '{outputPath}'");
         Console.WriteLine("Done.");
-        Console.WriteLine("Press any key to exit...");
-        Console.ReadKey();
     }
 
     public static Dictionary<string, byte[]>
