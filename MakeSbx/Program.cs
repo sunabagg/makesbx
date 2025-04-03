@@ -13,11 +13,11 @@ class Program
         for (var i = 0; i < args.Length; i++)
         {
             var arg = args[i];
-            if (arg == "i")
+            if (arg == "-i")
             {
                 inputPath = args[++i];
             }
-            else if (arg == "o")
+            else if (arg == "-o")
             {
                 outputPath = args[++i];
             }
@@ -65,15 +65,9 @@ class Program
         }
         
         var exePath = typeof(Program).Assembly.Location;
-        var exeDir = Path.GetDirectoryName(exePath);
-        if (exeDir == null)
-        {
-            Console.WriteLine("Could not determine the directory of the executable.");
-            return;
-        }
-        var localHaxePath = exeDir + Path.DirectorySeparatorChar + "haxe";
+        var localHaxePath = exePath + Path.DirectorySeparatorChar + "haxe";
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            localHaxePath = exeDir + Path.DirectorySeparatorChar + "haxe.exe";
+            localHaxePath = exePath + Path.DirectorySeparatorChar + "haxe.exe";
 
         ProcessStartInfo startInfo = new ProcessStartInfo(localHaxePath);
 
