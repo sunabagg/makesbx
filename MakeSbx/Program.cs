@@ -110,9 +110,9 @@ class Program
         
         var assets = GetAllFiles(inputPath + "/assets");
         
-        var binaryPath = Path.Combine(inputPath, "bin");
+        //var binaryPath = Path.Combine(inputPath, "bin");
         
-        var scripts = GetAllFiles(binaryPath);
+        //var scripts = GetAllFiles(binaryPath);
         
         var zipFile = new System.IO.Compression.ZipArchive(File.Create(outputPath), System.IO.Compression.ZipArchiveMode.Create);
         
@@ -134,7 +134,7 @@ class Program
             }
         }
 
-        if (scripts.Any())
+        /*if (scripts.Any())
         {
             foreach (var script in scripts)
             {
@@ -145,7 +145,7 @@ class Program
                     stream.Write(script.Value, 0, script.Value.Length);
                 }
             }
-        }
+        }*/
         
         
         zipFile.Dispose();
