@@ -10,6 +10,7 @@ class Program
         string outputPath = "";
         string currentDir = Directory.GetCurrentDirectory();
         string? inputPath = currentDir;
+        bool willOverwrite = false;
         for (var i = 0; i < args.Length; i++)
         {
             var arg = args[i];
@@ -21,12 +22,16 @@ class Program
             {
                 outputPath = args[++i];
             }
-            else if (arg == "h" || arg == "--help")
+            else if (arg == "-h" || arg == "--help")
             {
                 Console.WriteLine("Usage: MakeSbx [i <inputPath>] [o <outputPath>]");
                 Console.WriteLine("  i <inputPath>   Path to the input directory");
                 Console.WriteLine("  o <outputPath>  Path to the output file");
                 return;
+            }
+            else if (arg == "-w" || arg == "--overwrite")
+            {
+                willOverwrite = true;
             }
         }
         
@@ -41,6 +46,11 @@ class Program
             Console.WriteLine("Output path is required.");
             return;
         }
+
+        if (!outputPath.Contains("/"))
+        {
+            outputPath = "./" + outputPath;
+        }
         
         if (!outputPath.EndsWith(".sbx") && !outputPath.EndsWith(".sbz") && !outputPath.EndsWith(".sbzip"))
         {
@@ -54,7 +64,7 @@ class Program
             return;
         }
         
-        if (File.Exists(outputPath))
+        if (File.Exists(outputPath) && !willOverwrite)
         {
             Console.WriteLine($"Output file '{outputPath}' already exists. Overwrite? (y/n)");
             var response = Console.ReadLine();
@@ -116,7 +126,7 @@ class Program
         
         foreach (var asset in assets)
         {
-            var entry = zipFile.CreateEntry(asset.Key.Replace(inputPath + "/assets/", "/assets/"), System.IO.Compression.CompressionLevel.Optimal);
+            var entry = zipFile.CreateEntry(asset.Key.Replace(inputPath + "/assets/", "assets/"), System.IO.Compression.CompressionLevel.Optimal);
             Console.WriteLine($"Writing asset '{asset.Key}' to '{outputPath}'");
             using (var stream = entry.Open())
             {
