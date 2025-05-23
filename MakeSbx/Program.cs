@@ -124,6 +124,18 @@ class Program
             stream.Write(bytes, 0, bytes.Length);
         }
         
+        var sourceMapPath = mainLuaPath + ".map";
+        if (File.Exists(sourceMapPath))
+        {
+            var sourceMapEntry = zipFile.CreateEntry("main.lua.map", System.IO.Compression.CompressionLevel.Optimal);
+            Console.WriteLine($"Writing main.lua.map to '{outputPath}'");
+            using (var stream = sourceMapEntry.Open())
+            {
+                var bytes = File.ReadAllBytes(sourceMapPath);
+                stream.Write(bytes, 0, bytes.Length);
+            }
+        }
+        
         foreach (var asset in assets)
         {
             var entry = zipFile.CreateEntry(asset.Key.Replace(inputPath + "/assets/", "assets/"), System.IO.Compression.CompressionLevel.Optimal);
