@@ -121,6 +121,7 @@ class Program
         using (var stream = mainLuaEntry.Open())
         {
             var bytes = System.Text.Encoding.UTF8.GetBytes(mainLua);
+            File.Delete(mainLuaPath);
             stream.Write(bytes, 0, bytes.Length);
         }
         
@@ -132,6 +133,7 @@ class Program
             using (var stream = sourceMapEntry.Open())
             {
                 var bytes = File.ReadAllBytes(sourceMapPath);
+                File.Delete(sourceMapPath);
                 stream.Write(bytes, 0, bytes.Length);
             }
         }
